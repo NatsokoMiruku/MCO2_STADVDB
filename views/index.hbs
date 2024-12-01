@@ -16,7 +16,7 @@
           <th>Developers</th>
           <th>Publishers</th>
           <th>Categories</th>
-          <th>Gneres</th>
+          <th>Genres</th>
           <th>Positive</th>
           <th>Negative</th>
         </tr>
@@ -25,31 +25,34 @@
         {{#if games}}
           {{#each games}}
             <tr>
-              <td>{{AppID}}</td>
-              <td>{{Name}}</td>
-              <td>{{Releasedate}}</td>
-              <td>{{Requiredage}}</td>
-              <td>{{Price}}</td>
-              <td>{{DLCcount}}</td>
-              <td>{{Windows}}</td>
-              <td>{{Mac}}</td>
-              <td>{{Linux}}</td>
-              <td>{{Achievements}}</td>
-              <td>{{Developers}}</td>
-              <td>{{Publishers}}</td>
-              <td>{{Categories}}</td>
-              <td>{{Genres}}</td>
-              <td>{{Positive}}</td>
-              <td>{{Negative}}</td>
-              <td>
-                <a href="/edit/{{AppID}}">Edit</a> | 
-                <form action="/delete/{{AppID}}" method="POST" style="display:inline;">
-                  <button type="submit">Delete</button>
-                </form>
-              </td>
-            </tr>
-          {{/each}}
+            <form id="update-form-{{AppID}}" action="/gamelists/{{AppID}}" method="POST">
+            <td>{{AppID}}</td>
+            <td><input type="text" name="Name" value="{{Name}}" required /></td>
+            <td><input type="date" name="Releasedate" value="{{Releasedate}}" required /></td>
+            <td><input type="number" name="Requiredage" value="{{Requiredage}}" min="0" /></td>
+            <td><input type="number" name="Price" value="{{Price}}" min="0" step="0.01" required /></td>
+            <td><input type="number" name="DLCcount" value="{{DLCcount}}" min="0" /></td>
+            <td><input type="checkbox" name="Windows" value="true" {{#if Windows}}checked{{/if}} /></td>
+            <td><input type="checkbox" name="Mac" value="true" {{#if Mac}}checked{{/if}} /></td>
+            <td><input type="checkbox" name="Linux" value="true" {{#if Linux}}checked{{/if}} /></td>
+            <td><input type="number" name="Achievements" value="{{Achievements}}" min="0" /></td>
+            <td><input type="text" name="Developers" value="{{Developers}}" required /></td>
+            <td><input type="text" name="Publishers" value="{{Publishers}}" required /></td>
+            <td><input type="text" name="Categories" value="{{Categories}}" required /></td>
+            <td><input type="text" name="Genres" value="{{Genres}}" required /></td>
+            <td><input type="number" name="Positive" value="{{Positive}}" min="0" /></td>
+            <td><input type="number" name="Negative" value="{{Negative}}" min="0" /></td>
+            <td>
+              <button type="submit">Update</button>
+              <a href="/edit/{{AppID}}">Edit</a> | 
+            </form>
+            <form action="/delete/{{AppID}}" method="POST" style="display:inline;">
+                <button type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
         {{else}}
+        {{/each}}
         {{/if}}
       </tbody>
     </table>
@@ -69,7 +72,7 @@
         </br>
 
         <label for="Requiredage">Required Age</label>
-        <input type="number" id="Price" name="Price" min="0" required>
+        <input type="number" id="Requiredage" name="Requiredage" min="0" required>
         </br>
 
         <label for="Price">Price</label>
@@ -77,11 +80,11 @@
         </br>
 
         <label for="DLCcount">DLCcount</label>
-        <input type="number" id="Price" name="Price" min="0" required>
+        <input type="number" id="DLCcount" name="DLCcount" min="0" required>
         </br>
 
         <label for="Windows">Windows</label>
-        <input type="text" id="Price" name="Price" required>
+        <input type="text" id="Windows" name="Windows" required>
         </br>
 
         <label for="Mac">Mac</label>

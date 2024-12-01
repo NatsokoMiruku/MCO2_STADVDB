@@ -2,7 +2,7 @@ import express from 'express';
 import { CentralNodeGameInformation, Node2GameInformation, Node3GameInformation } from '../DBConn.js';
 import csvParser from 'csv-parser';
 import fs from 'fs';
-import { parse } from 'date-fns';
+import { parse, format } from 'date-fns';
 
 
 const transactionsRouter = express.Router();
@@ -25,30 +25,40 @@ transactionsRouter.get('/', async (req, res) => {
 });
 
 // create new record
-transactionsRouter.post('/gamelists', async (req, res) => {
-  const { AppId, Name, Releasedate, Price, Aboutthegame } = req.body;
+transactionsRouter.post('/games', async (req, res) => {
+  const { AppID, Name, Releasedate, Requiredage, Price, DLCcount, Windows, Mac, Linux, Achievements, Developers, Publishers, Categories, Genres, Positive, Negative} = req.body;
+  
+  const AppID_double = parseFloat(AppID);
+  const Requiredage_double = parseFloat(Requiredage);
+  const Price_double = parseFloat(Price);
+  const DLCcount_double = parseFloat(DLCcount);
+  const Achievements_double = parseFloat(Achievements);
+  const Positive_double = parseFloat(Positive);
+  const Negative_double = parseFloat(Negative);
+  const parsedDate = parse(Releasedate, 'dd-MMM-yy', new Date());
+  const formattedDate = format(parsedDate, 'dd/MM/yyyy');
 
   try {
     const newGame = await CentralNodeGameInformation.create({
-      AppId,
-      Name, 
-      Releasedate,
-      Requiredage,
-      Price,
-      DLCcount,
-      Windows,
-      Mac,
-      Linux,
-      Achievements,
-      Developers,
-      Publishers,
-      Categories,
-      Genres,
-      Positive,
-      Negative      
+      AppID: AppID_double,
+      Name: Name , 
+      Releasedate: formattedDate,
+      Requiredage: Requiredage_double,
+      Price: Price_double,
+      DLCcount: DLCcount_double,
+      Windows: Windows,
+      Mac: Mac,
+      Linux: Linux,
+      Achievements: Achievements_double,
+      Developers: Developers,
+      Publishers: Publishers,
+      Categories: Categories,
+      Genres: Genres,
+      Positive: Positive_double,
+      Negative: Negative_double,      
     });
 
-    res.redirect('/gamelists');
+    res.redirect('/');
   } catch (error) {
     res.status(500).send('Error creating new record: ' + error.message);
   }
@@ -58,7 +68,7 @@ transactionsRouter.post('/gamelists', async (req, res) => {
 transactionsRouter.post('/gamelists/:id', async (req, res) => {
   
   const { id } = req.params;
-  const { AppId,
+  const { 
     Name, 
     Releasedate,
     Requiredage,
@@ -75,13 +85,17 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
     Positive,
     Negative  
    } = req.body;
+
+  
+   const formattedDate = format(Releasedate, 'dd/MM/yyyy');
+
   try {
     const game = await CentralNodeGameInformation.findByPk(id);
     if (!game) {
       return res.status(404).send('Game not found');
     }
     game.Name = Name;
-    game.Releasedate = Releasedate;
+    game.Releasedate = formattedDate;
     game.Requiredage = Requiredage;
     game.Price = Price;
     game.DLCcount = DLCcount;
@@ -97,14 +111,14 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
     game.Negative = Negative; 
 
     await game.save();
-    res.redirect('/games');
+    res.redirect('/');
   } catch (error) {
-    res.status(500).send('Error deleting record: ' + error.message);
+    res.status(500).send('Error updating record: ' + error.message);
   }
 });
 
 // delete record
-transactionsRouter.post('/gamelists/delete/:id', async (req, res) => {
+transactionsRouter.post('/delete/:id', async (req, res) => {
   
   const { id } = req.params;
   try {
@@ -113,7 +127,7 @@ transactionsRouter.post('/gamelists/delete/:id', async (req, res) => {
       return res.status(404).send('Game not found');
     }
     await game.destroy();
-    res.redirect('/games'); 
+    res.redirect('/'); 
   } catch (error) {
     res.status(500).send('Error deleting record: ' + error.message);
   }
