@@ -1,0 +1,89 @@
+<div>
+    <h2>Add New Game</h2>
+      <form action="/games" method="POST">
+        <label for="AppID">AppID</label>
+        <input type="number" id="AppID" name="AppID" required>
+        </br>
+        
+        <label for="Name">Name</label>
+        <input type="text" id="Name" name="Name" required>
+        </br>
+
+        <label for="Releasedate">Release Date</label>
+        <input type="date" id="Releasedate" name="Releasedate" required>
+        </br>
+
+        <label for="Requiredage">Required Age</label>
+        <input type="number" id="Price" name="Price" min="0" required>
+        </br>
+
+        <label for="Price">Price</label>
+        <input type="number" id="Price" name="Price" min="0" required>
+        </br>
+
+        <label for="DLCcount">DLCcount</label>
+        <input type="number" id="Price" name="Price" min="0" required>
+        </br>
+
+        <label for="Windows">Windows</label>
+        <input type="text" id="Price" name="Price" required>
+        </br>
+
+        <label for="Mac">Mac</label>
+        <input type="text" id="Mac" name="Mac" required></textarea>
+        </br>
+
+        <label for="Linux">Linux</label>
+        <input type="text" id="Linux" name="Linux" required>
+        </br>
+        
+        <label for="Achievements">Achievements</label>
+        <input type="text" id="Achievements" name="Achievements" required>
+        </br>
+
+        <label for="Developers">Developers</label>
+        <input type="text" id="Developers" name="Developers" required>
+        </br>
+
+        <label for="Publishers">Publishers</label>
+        <input type="text" id="Publishers" name="Publishers" required>
+        </br>
+
+        <label for="Categories">Categories</label>
+        <input type="text" id="Categories" name="Categories" required>
+        </br>
+
+        <label for="Genres">Genres</label>
+        <input type="text" id="Genres" name="Genres" required>
+        </br>
+
+        <label for="Positive">Positive</label>
+        <input type="number" id="Positive" name="Positive" min="0" required>
+        </br>
+
+        <label for="Negative">Negative</label>
+        <input type="number" id="Negative" name="Negative" min="0" required>
+        </br>
+
+        <button type="submit">Add Game</button>
+      </form>
+
+      <h2>Delete a Game</h2>
+      <form action="/games" method="POST">
+        <label for="AppID">AppID</label>
+        <input type="number" id="AppID" name="AppID"  required>
+        </br>
+
+        <button type="submit">Delete Record</button>
+      </form>
+
+      <h2>Update record</h2>
+      <form action="/games" method="POST">
+        <label for="AppID">AppID</label>
+        <input type="number" id="AppID" name="AppID" required>
+        </br>
+
+        <button type="submit">Update details</button>
+      </form>
+
+</div>
