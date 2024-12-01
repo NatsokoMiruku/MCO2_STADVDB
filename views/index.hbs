@@ -22,32 +22,35 @@
         </tr>
       </thead>
       <tbody>
-        {{#each games}}
-          <tr>
-            <td>{{this.AppID}}</td>
-            <td>{{this.Name}}</td>
-            <td>{{this.Releasedate}}</td>
-            <td>{{this.Requiredage}}</td>
-            <td>{{this.Price}}</td>
-            <td>{{this.DLCcount}}</td>
-            <td>{{this.Windows}}</td>
-            <td>{{this.Mac}}</td>
-            <td>{{this.Linux}}</td>
-            <td>{{this.Achievements}}</td>
-            <td>{{this.Developers}}</td>
-            <td>{{this.Publishers}}</td>
-            <td>{{this.Categories}}</td>
-            <td>{{this.Genres}}</td>
-            <td>{{this.Positive}}</td>
-            <td>{{this.Negative}}</td>
-            <td>
-              <a href="/edit/{{this.AppID}}">Edit</a> | 
-              <form action="/delete/{{this.AppID}}" method="POST" style="display:inline;">
-                <button type="submit">Delete</button>
-              </form>
-            </td>
-          </tr>
-        {{/each}}
+        {{#if games}}
+          {{#each games}}
+            <tr>
+              <td>{{AppID}}</td>
+              <td>{{Name}}</td>
+              <td>{{Releasedate}}</td>
+              <td>{{Requiredage}}</td>
+              <td>{{Price}}</td>
+              <td>{{DLCcount}}</td>
+              <td>{{Windows}}</td>
+              <td>{{Mac}}</td>
+              <td>{{Linux}}</td>
+              <td>{{Achievements}}</td>
+              <td>{{Developers}}</td>
+              <td>{{Publishers}}</td>
+              <td>{{Categories}}</td>
+              <td>{{Genres}}</td>
+              <td>{{Positive}}</td>
+              <td>{{Negative}}</td>
+              <td>
+                <a href="/edit/{{AppID}}">Edit</a> | 
+                <form action="/delete/{{AppID}}" method="POST" style="display:inline;">
+                  <button type="submit">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {{/each}}
+        {{else}}
+        {{/if}}
       </tbody>
     </table>
 
@@ -129,4 +132,70 @@
         <button type="submit">Update details</button>
       </form>
 
+      <!-- import csv buttons
+      <button id="import-csv-for-central-node">Import CSV for Central Node</button>
+      <button id="import-csv-for-node-2">Import CSV for Node 2</button>
+      <button id="import-csv-for-node-3">Import CSV for Node 3</button>
+      <div id="loading-csv"></div>-->
 </div>
+
+<script>
+
+  //importing csv
+  /*const importCsvBtn = document.querySelector('#import-csv-for-central-node');
+  importCsvBtn.addEventListener('click', async () => {
+    try{
+      const loading = document.querySelector('#loading-csv');
+      loading.innerHTML = 'Importing CSV... Wait for page to refresh.'
+      const response = await fetch('/importcsv', {
+        method: 'GET'
+      });
+      if(response.ok) {
+        location.reload();
+      } else {
+        alert('CSV ALREADY IMPORTED');
+        location.reload();
+      }
+    } catch(e) {
+      console.log(err);
+    }
+  });
+
+  const importCsvBtn2 = document.querySelector('#import-csv-for-node-2');
+  importCsvBtn2.addEventListener('click', async () => {
+    try{
+      const loading = document.querySelector('#loading-csv');
+      loading.innerHTML = 'Importing CSV... Wait for page to refresh.'
+      const response = await fetch('/importcsvnode2', {
+        method: 'GET'
+      });
+      if(response.ok) {
+        location.reload();
+      } else {
+        alert('CSV ALREADY IMPORTED');
+        location.reload();
+      }
+    } catch(e) {
+      console.log(err);
+    }
+  });
+
+   const importCsvBtn3 = document.querySelector('#import-csv-for-node-3');
+  importCsvBtn3.addEventListener('click', async () => {
+    try{
+      const loading = document.querySelector('#loading-csv');
+      loading.innerHTML = 'Importing CSV... Wait for page to refresh.'
+      const response = await fetch('/importcsvnode3', {
+        method: 'GET'
+      });
+      if(response.ok) {
+        location.reload();
+      } else {
+        alert('CSV ALREADY IMPORTED');
+        location.reload();
+      }
+    } catch(e) {
+      console.log(err);
+    }
+  });*/
+</script>
