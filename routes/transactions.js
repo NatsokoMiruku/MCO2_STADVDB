@@ -10,7 +10,10 @@ transactionsRouter.get('/', (req,res) => {
 // read all of the records
 transactionsRouter.get('/gamelists', async (req, res) => {
   try {
-    const steamgames = await CentralNodeGameInformation.findAll();
+    // limit the display of the steamgames records to 20
+    const steamgames = await CentralNodeGameInformation.findAll({ limit: 20 });
+
+    res.render('index', { games: steamgames });
   } catch (error) {
     res.status(500).send('Error fetching data: ' + error.message);
   }
@@ -25,8 +28,19 @@ transactionsRouter.post('/gamelists', async (req, res) => {
       AppId,
       Name, 
       Releasedate,
+      Requiredage,
       Price,
-      Aboutthegame
+      DLCcount,
+      Windows,
+      Mac,
+      Linux,
+      Achievements,
+      Developers,
+      Publishers,
+      Categories,
+      Genres,
+      Positive,
+      Negative      
     });
 
     res.redirect('/gamelists');
@@ -39,7 +53,23 @@ transactionsRouter.post('/gamelists', async (req, res) => {
 transactionsRouter.post('/gamelists/:id', async (req, res) => {
   
   const { id } = req.params;
-  const { Name, Releasedate, Price, Aboutthegame } = req.body;
+  const { AppId,
+    Name, 
+    Releasedate,
+    Requiredage,
+    Price,
+    DLCcount,
+    Windows,
+    Mac,
+    Linux,
+    Achievements,
+    Developers,
+    Publishers,
+    Categories,
+    Genres,
+    Positive,
+    Negative  
+   } = req.body;
   try {
     const game = await CentralNodeGameInformation.findByPk(id);
     if (!game) {
@@ -47,8 +77,20 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
     }
     game.Name = Name;
     game.Releasedate = Releasedate;
+    game.Requiredage = Requiredage;
     game.Price = Price;
-    game.Aboutthegame = Aboutthegame;
+    game.DLCcount = DLCcount;
+    game.Windows = Windows;
+    game.Mac = Mac;
+    game.Linux = Linux;
+    game.Achievements = Achievements;
+    game.Developers = Developers;
+    game.Publishers = Publishers;
+    game.Categories = Categories;
+    game.Genres = Genres;
+    game.Positive = Positive;
+    game.Negative = Negative; 
+
     await game.save();
     res.redirect('/games');
   } catch (error) {

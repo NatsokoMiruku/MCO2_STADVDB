@@ -1,4 +1,56 @@
 <div>
+    <h1>Game List</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>AppID</th>
+          <th>Name</th>
+          <th>Releasedate</th>
+          <th>Requiredage</th>
+          <th>Price</th>
+          <th>DLCcount</th>
+          <th>Windows</th>
+          <th>Mac</th>
+          <th>Linux</th>
+          <th>Achievements</th>
+          <th>Developers</th>
+          <th>Publishers</th>
+          <th>Categories</th>
+          <th>Gneres</th>
+          <th>Positive</th>
+          <th>Negative</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each games}}
+          <tr>
+            <td>{{this.AppID}}</td>
+            <td>{{this.Name}}</td>
+            <td>{{this.Releasedate}}</td>
+            <td>{{this.Requiredage}}</td>
+            <td>{{this.Price}}</td>
+            <td>{{this.DLCcount}}</td>
+            <td>{{this.Windows}}</td>
+            <td>{{this.Mac}}</td>
+            <td>{{this.Linux}}</td>
+            <td>{{this.Achievements}}</td>
+            <td>{{this.Developers}}</td>
+            <td>{{this.Publishers}}</td>
+            <td>{{this.Categories}}</td>
+            <td>{{this.Genres}}</td>
+            <td>{{this.Positive}}</td>
+            <td>{{this.Negative}}</td>
+            <td>
+              <a href="/edit/{{this.AppID}}">Edit</a> | 
+              <form action="/delete/{{this.AppID}}" method="POST" style="display:inline;">
+                <button type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
     <h2>Add New Game</h2>
       <form action="/games" method="POST">
         <label for="AppID">AppID</label>
@@ -66,15 +118,6 @@
         </br>
 
         <button type="submit">Add Game</button>
-      </form>
-
-      <h2>Delete a Game</h2>
-      <form action="/games" method="POST">
-        <label for="AppID">AppID</label>
-        <input type="number" id="AppID" name="AppID"  required>
-        </br>
-
-        <button type="submit">Delete Record</button>
       </form>
 
       <h2>Update record</h2>
