@@ -53,7 +53,7 @@ transactionsRouter.post('/gamelists', async (req, res) => {
 transactionsRouter.post('/gamelists/:id', async (req, res) => {
   
   const { id } = req.params;
-  const { AppId,
+  const {
     Name, 
     Releasedate,
     Requiredage,
@@ -92,7 +92,7 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
     game.Negative = Negative; 
 
     await game.save();
-    res.redirect('/games');
+    res.redirect('/gamelists');
   } catch (error) {
     res.status(500).send('Error deleting record: ' + error.message);
   }
