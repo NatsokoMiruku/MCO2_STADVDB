@@ -4,33 +4,71 @@ import { CentralNodeGameInformation, Node2GameInformation, Node3GameInformation 
 const transactionsRouter = express.Router();
 
 transactionsRouter.get('/', (req,res) => {
-  res.send('Loading Page...');
+  res.render('index');
 });
 
-// Case #1: Read-only transactions across nodes
-transactionsRouter.get('/case1', async (req, res) => {
+// read all of the records
+transactionsRouter.get('/gamelists', async (req, res) => {
   try {
-    res.render('case1');
+    const steamgames = await CentralNodeGameInformation.findAll();
   } catch (error) {
     res.status(500).send('Error fetching data: ' + error.message);
   }
 });
 
-// Case #2: One writer, multiple readers
-transactionsRouter.post('/case2', async (req, res) => {
+// create new record
+transactionsRouter.post('/gamelists', async (req, res) => {
+  const { AppId, Name, Releasedate, Price, Aboutthegame } = req.body;
+
   try {
-    res.render('case2');
+    const newGame = await CentralNodeGameInformation.create({
+      AppId,
+      Name, 
+      Releasedate,
+      Price,
+      Aboutthegame
+    });
+
+    res.redirect('/gamelists');
   } catch (error) {
-    res.status(500).send('Error processing request: ' + error.message);
+    res.status(500).send('Error creating new record: ' + error.message);
   }
 });
 
-// Case #3: Multiple writers
-transactionsRouter.post('/case3', async (req, res) => {
+// update record
+transactionsRouter.post('/gamelists/:id', async (req, res) => {
+  
+  const { id } = req.params;
+  const { Name, Releasedate, Price, Aboutthegame } = req.body;
   try {
-    res.render('case3');
+    const game = await CentralNodeGameInformation.findByPk(id);
+    if (!game) {
+      return res.status(404).send('Game not found');
+    }
+    game.Name = Name;
+    game.Releasedate = Releasedate;
+    game.Price = Price;
+    game.Aboutthegame = Aboutthegame;
+    await game.save();
+    res.redirect('/games');
   } catch (error) {
-    res.status(500).send('Error processing request: ' + error.message);
+    res.status(500).send('Error deleting record: ' + error.message);
+  }
+});
+
+// delete record
+transactionsRouter.post('/gamelists/delete/:id', async (req, res) => {
+  
+  const { id } = req.params;
+  try {
+    const game = await CentralNodeGameInformation.findByPk(id);
+    if (!game) {
+      return res.status(404).send('Game not found');
+    }
+    await game.destroy();
+    res.redirect('/games'); 
+  } catch (error) {
+    res.status(500).send('Error deleting record: ' + error.message);
   }
 });
 

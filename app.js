@@ -10,22 +10,27 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { engine } from 'express-handlebars';
 import transactionsRouter from './routes/transactions.js';
+import bodyParser from 'body-parser';
 
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-app.engine('hbs', engine({
-    extname: '.hbs', 
-    defaultLayout: 'main', 
-    layoutsDir: path.join(__dirname, '/views/layouts')
-}));
+// app.engine('hbs', engine({
+//     extname: '.hbs', 
+//     defaultLayout: 'main', 
+//     layoutsDir: path.join(__dirname, '/views/layouts')
+// }));
 
 // middleware
+app.use(bodyParser.urlencoded({ extended: true }));
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
-// app.set('views',  path.join(__dirname, 'views'));
+app.engine('hbs', engine({
+    extname: '.hbs', 
+    defaultLayout: 'main'
+}));
 
 // app.get('/', (req, res) =>{
 //     res.render('index', { title: 'Welcome to Transactions' });
