@@ -1,14 +1,21 @@
-<div>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game Management</title>
+</head>
+<body>
+  <div>
+    <!-- Read-Only Game List -->
     <h1>Game List</h1>
-    <table>
+    <table border="1">
       <thead>
         <tr>
           <th>AppID</th>
           <th>Name</th>
-          <th>Releasedate</th>
-          <th>Requiredage</th>
+          <th>Release Date</th>
+          <th>Required Age</th>
           <th>Price</th>
-          <th>DLCcount</th>
+          <th>DLC Count</th>
           <th>Windows</th>
           <th>Mac</th>
           <th>Linux</th>
@@ -22,183 +29,175 @@
         </tr>
       </thead>
       <tbody>
-        {{#if games}}
-          {{#each games}}
-            <tr>
-            <form id="update-form-{{AppID}}" action="/gamelists/{{AppID}}" method="POST">
-            <td>{{AppID}}</td>
-            <td><input type="text" name="Name" value="{{Name}}" required /></td>
-            <td><input type="date" name="Releasedate" value="{{Releasedate}}" required /></td>
-            <td><input type="number" name="Requiredage" value="{{Requiredage}}" min="0" /></td>
-            <td><input type="number" name="Price" value="{{Price}}" min="0" step="0.01" required /></td>
-            <td><input type="number" name="DLCcount" value="{{DLCcount}}" min="0" /></td>
-            <td><input type="checkbox" name="Windows" value="true" {{#if Windows}}checked{{/if}} /></td>
-            <td><input type="checkbox" name="Mac" value="true" {{#if Mac}}checked{{/if}} /></td>
-            <td><input type="checkbox" name="Linux" value="true" {{#if Linux}}checked{{/if}} /></td>
-            <td><input type="number" name="Achievements" value="{{Achievements}}" min="0" /></td>
-            <td><input type="text" name="Developers" value="{{Developers}}" required /></td>
-            <td><input type="text" name="Publishers" value="{{Publishers}}" required /></td>
-            <td><input type="text" name="Categories" value="{{Categories}}" required /></td>
-            <td><input type="text" name="Genres" value="{{Genres}}" required /></td>
-            <td><input type="number" name="Positive" value="{{Positive}}" min="0" /></td>
-            <td><input type="number" name="Negative" value="{{Negative}}" min="0" /></td>
-            <td>
-              <button type="submit">Update</button>
-              <a href="/edit/{{AppID}}">Edit</a> | 
-            </form>
-            <form action="/delete/{{AppID}}" method="POST" style="display:inline;">
-                <button type="submit">Delete</button>
-              </form>
-            </td>
-          </tr>
-        {{else}}
+        {{#each games}}
+        <tr>
+          <td>{{this.AppID}}</td>
+          <td>{{this.Name}}</td>
+          <td>{{this.Releasedate}}</td>
+          <td>{{this.Requiredage}}</td>
+          <td>{{this.Price}}</td>
+          <td>{{this.DLCcount}}</td>
+          <td>{{this.Windows}}</td>
+          <td>{{this.Mac}}</td>
+          <td>{{this.Linux}}</td>
+          <td>{{this.Achievements}}</td>
+          <td>{{this.Developers}}</td>
+          <td>{{this.Publishers}}</td>
+          <td>{{this.Categories}}</td>
+          <td>{{this.Genres}}</td>
+          <td>{{this.Positive}}</td>
+          <td>{{this.Negative}}</td>
+        </tr>
         {{/each}}
-        {{/if}}
       </tbody>
     </table>
+  </div>
 
+  <div>
+    <!-- Editable and Deletable Entries with Dropdown -->
+    <h2>Edit or Delete Games</h2>
+    <label for="gameDropdown">Select a game to edit or delete:</label>
+    <select id="gameDropdown" onchange="showGameForm(this.value)">
+      <option value="">-- Select a Game --</option>
+      {{#each games}}
+      <option value="{{this.AppID}}">{{this.Name}} (AppID: {{this.AppID}})</option>
+      {{/each}}
+    </select>
+
+    <!-- Form container for edit and delete -->
+    <div id="gameFormContainer" style="display: none; margin-top: 20px;">
+      <h3>Edit Game</h3>
+      <form id="updateForm" action="" method="POST">
+        <input type="hidden" id="editAppID" name="AppID">
+        <label for="editName">Name:</label>
+        <input type="text" id="editName" name="Name" required><br>
+        <label for="editReleasedate">Release Date:</label>
+        <input type="date" id="editReleasedate" name="Releasedate" required><br>
+        <label for="editRequiredage">Required Age:</label>
+        <input type="number" id="editRequiredage" name="Requiredage" min="0"><br>
+        <label for="editPrice">Price:</label>
+        <input type="number" id="editPrice" name="Price" min="0" step="0.01" required><br>
+        <label for="editDLCcount">DLC Count:</label>
+        <input type="number" id="editDLCcount" name="DLCcount" min="0"><br>
+        <label for="editWindows">Windows:</label>
+        <input type="checkbox" id="editWindows" name="Windows"><br>
+        <label for="editMac">Mac:</label>
+        <input type="checkbox" id="editMac" name="Mac"><br>
+        <label for="editLinux">Linux:</label>
+        <input type="checkbox" id="editLinux" name="Linux"><br>
+        <label for="editAchievements">Achievements:</label>
+        <input type="number" id="editAchievements" name="Achievements" min="0"><br>
+        <label for="editDevelopers">Developers:</label>
+        <input type="text" id="editDevelopers" name="Developers" required><br>
+        <label for="editPublishers">Publishers:</label>
+        <input type="text" id="editPublishers" name="Publishers" required><br>
+        <label for="editCategories">Categories:</label>
+        <input type="text" id="editCategories" name="Categories" required><br>
+        <label for="editGenres">Genres:</label>
+        <input type="text" id="editGenres" name="Genres" required><br>
+        <label for="editPositive">Positive:</label>
+        <input type="number" id="editPositive" name="Positive" min="0"><br>
+        <label for="editNegative">Negative:</label>
+        <input type="number" id="editNegative" name="Negative" min="0"><br>
+        <button type="submit">Update Game</button>
+      </form>
+
+      <h3>Delete Game</h3>
+      <form id="deleteForm" action="" method="POST" onsubmit="return confirmDelete()"></form>
+        <input type="hidden" id="deleteAppID" name="AppID">
+        <button type="submit" style="background-color: red; color: white;">Delete Game</button>
+      </form>
+    </div>
+  </div>
+
+  <div>
+    <!-- Add New Game -->
     <h2>Add New Game</h2>
-      <form action="/games" method="POST">
-        <label for="AppID">AppID</label>
-        <input type="number" id="AppID" name="AppID" required>
-        </br>
+    <form action="/games" method="POST">
+      <label for="AppID">AppID</label>
+      <input type="number" id="AppID" name="AppID" required><br>
+      <label for="Name">Name</label>
+      <input type="text" id="Name" name="Name" required><br>
+      <label for="Releasedate">Release Date</label>
+      <input type="date" id="Releasedate" name="Releasedate" required><br>
+      <label for="Requiredage">Required Age</label>
+      <input type="number" id="Requiredage" name="Requiredage" min="0"><br>
+      <label for="Price">Price</label>
+      <input type="number" id="Price" name="Price" min="0" step="0.01" required><br>
+      <label for="DLCcount">DLC Count</label>
+      <input type="number" id="DLCcount" name="DLCcount" min="0"><br>
+      <label for="Windows">Windows</label>
+      <input type="checkbox" id="Windows" name="Windows" value="true"><br>
+      <label for="Mac">Mac</label>
+      <input type="checkbox" id="Mac" name="Mac" value="true"><br>
+      <label for="Linux">Linux</label>
+      <input type="checkbox" id="Linux" name="Linux" value="true"><br>
+      <label for="Achievements">Achievements</label>
+      <input type="number" id="Achievements" name="Achievements" min="0"><br>
+      <label for="Developers">Developers</label>
+      <input type="text" id="Developers" name="Developers" required><br>
+      <label for="Publishers">Publishers</label>
+      <input type="text" id="Publishers" name="Publishers" required><br>
+      <label for="Categories">Categories</label>
+      <input type="text" id="Categories" name="Categories" required><br>
+      <label for="Genres">Genres</label>
+      <input type="text" id="Genres" name="Genres" required><br>
+      <label for="Positive">Positive</label>
+      <input type="number" id="Positive" name="Positive" min="0"><br>
+      <label for="Negative">Negative</label>
+      <input type="number" id="Negative" name="Negative" min="0"><br>
+      <button type="submit">Add Game</button>
+    </form>
+  </div>
+
+  <script>
+    const games = JSON.parse('{{{gamesJSON}}}');
+
+    function showGameForm(appID) {
+      const gameFormContainer = document.getElementById('gameFormContainer');
+      const updateForm = document.getElementById('updateForm');
+      const deleteForm = document.getElementById('deleteForm');
+      const selectedGame = games.find(game => game.AppID == appID);
+
+      if (selectedGame) {
+        gameFormContainer.style.display = 'block';
+        updateForm.action = `/gamelists/${appID}`;
+        deleteForm.action = `/delete/${appID}`;
         
-        <label for="Name">Name</label>
-        <input type="text" id="Name" name="Name" required>
-        </br>
-
-        <label for="Releasedate">Release Date</label>
-        <input type="date" id="Releasedate" name="Releasedate" required>
-        </br>
-
-        <label for="Requiredage">Required Age</label>
-        <input type="number" id="Requiredage" name="Requiredage" min="0" required>
-        </br>
-
-        <label for="Price">Price</label>
-        <input type="number" id="Price" name="Price" min="0" required>
-        </br>
-
-        <label for="DLCcount">DLCcount</label>
-        <input type="number" id="DLCcount" name="DLCcount" min="0" required>
-        </br>
-
-        <label for="Windows">Windows</label>
-        <input type="text" id="Windows" name="Windows" required>
-        </br>
-
-        <label for="Mac">Mac</label>
-        <input type="text" id="Mac" name="Mac" required></textarea>
-        </br>
-
-        <label for="Linux">Linux</label>
-        <input type="text" id="Linux" name="Linux" required>
-        </br>
+        // Populate fields
+        document.getElementById('editAppID').value = selectedGame.AppID;
+        document.getElementById('editName').value = selectedGame.Name || '';
         
-        <label for="Achievements">Achievements</label>
-        <input type="text" id="Achievements" name="Achievements" required>
-        </br>
+        // Handle release date formatting for <input type="date">
+        if (selectedGame.Releasedate) {
+          const date = new Date(selectedGame.Releasedate);
+          const formattedDate = date.toISOString().split('T')[0]; // Convert to YYYY-MM-DD
+          document.getElementById('editReleasedate').value = formattedDate;
+        } else {
+          document.getElementById('editReleasedate').value = '';
+        }
 
-        <label for="Developers">Developers</label>
-        <input type="text" id="Developers" name="Developers" required>
-        </br>
-
-        <label for="Publishers">Publishers</label>
-        <input type="text" id="Publishers" name="Publishers" required>
-        </br>
-
-        <label for="Categories">Categories</label>
-        <input type="text" id="Categories" name="Categories" required>
-        </br>
-
-        <label for="Genres">Genres</label>
-        <input type="text" id="Genres" name="Genres" required>
-        </br>
-
-        <label for="Positive">Positive</label>
-        <input type="number" id="Positive" name="Positive" min="0" required>
-        </br>
-
-        <label for="Negative">Negative</label>
-        <input type="number" id="Negative" name="Negative" min="0" required>
-        </br>
-
-        <button type="submit">Add Game</button>
-      </form>
-
-      <h2>Update record</h2>
-      <form action="/games" method="POST">
-        <label for="AppID">AppID</label>
-        <input type="number" id="AppID" name="AppID" required>
-        </br>
-
-        <button type="submit">Update details</button>
-      </form>
-
-      <!-- import csv buttons
-      <button id="import-csv-for-central-node">Import CSV for Central Node</button>
-      <button id="import-csv-for-node-2">Import CSV for Node 2</button>
-      <button id="import-csv-for-node-3">Import CSV for Node 3</button>
-      <div id="loading-csv"></div>-->
-</div>
-
-<script>
-
-  //importing csv
-  /*const importCsvBtn = document.querySelector('#import-csv-for-central-node');
-  importCsvBtn.addEventListener('click', async () => {
-    try{
-      const loading = document.querySelector('#loading-csv');
-      loading.innerHTML = 'Importing CSV... Wait for page to refresh.'
-      const response = await fetch('/importcsv', {
-        method: 'GET'
-      });
-      if(response.ok) {
-        location.reload();
+        document.getElementById('editRequiredage').value = selectedGame.Requiredage || '';
+        document.getElementById('editPrice').value = selectedGame.Price || '';
+        document.getElementById('editDLCcount').value = selectedGame.DLCcount || '';
+        document.getElementById('editWindows').checked = !!selectedGame.Windows;
+        document.getElementById('editMac').checked = !!selectedGame.Mac;
+        document.getElementById('editLinux').checked = !!selectedGame.Linux;
+        document.getElementById('editAchievements').value = selectedGame.Achievements || '';
+        document.getElementById('editDevelopers').value = selectedGame.Developers || '';
+        document.getElementById('editPublishers').value = selectedGame.Publishers || '';
+        document.getElementById('editCategories').value = selectedGame.Categories || '';
+        document.getElementById('editGenres').value = selectedGame.Genres || '';
+        document.getElementById('editPositive').value = selectedGame.Positive || '';
+        document.getElementById('editNegative').value = selectedGame.Negative || '';
       } else {
-        alert('CSV ALREADY IMPORTED');
-        location.reload();
+        gameFormContainer.style.display = 'none';
       }
-    } catch(e) {
-      console.log(err);
     }
-  });
 
-  const importCsvBtn2 = document.querySelector('#import-csv-for-node-2');
-  importCsvBtn2.addEventListener('click', async () => {
-    try{
-      const loading = document.querySelector('#loading-csv');
-      loading.innerHTML = 'Importing CSV... Wait for page to refresh.'
-      const response = await fetch('/importcsvnode2', {
-        method: 'GET'
-      });
-      if(response.ok) {
-        location.reload();
-      } else {
-        alert('CSV ALREADY IMPORTED');
-        location.reload();
-      }
-    } catch(e) {
-      console.log(err);
+    function confirmDelete() {
+      return confirm("Are you sure you want to delete this game? This action cannot be undone.");
     }
-  });
-
-   const importCsvBtn3 = document.querySelector('#import-csv-for-node-3');
-  importCsvBtn3.addEventListener('click', async () => {
-    try{
-      const loading = document.querySelector('#loading-csv');
-      loading.innerHTML = 'Importing CSV... Wait for page to refresh.'
-      const response = await fetch('/importcsvnode3', {
-        method: 'GET'
-      });
-      if(response.ok) {
-        location.reload();
-      } else {
-        alert('CSV ALREADY IMPORTED');
-        location.reload();
-      }
-    } catch(e) {
-      console.log(err);
-    }
-  });*/
-</script>
+  </script>
+</body>
+</html>
