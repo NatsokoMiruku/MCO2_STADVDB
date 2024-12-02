@@ -16,9 +16,21 @@ transactionsRouter.get('/', async (req, res) => {
   try {
     // limit the display of the steamgames records to 20
     const steamgames = await CentralNodeGameInformation.findAll({ limit: 20, raw: true });
-    console.log(steamgames);
-
-    res.render('index', { games: steamgames });
+  
+    for(const games of steamgames){
+      try{
+        const parsedDate = parse(games.Releasedate, 'dd-MMM-yy', new Date());
+        const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+        games.Releasedate = formattedDate;
+      } catch(e)
+      {
+        console.log('format already fixed.');
+      }
+    }
+    //console.log(steamgames);
+    res.render('index', { games: steamgames, helpers: {
+      isTrue(value) {return value == 'TRUE';}
+    } });
   } catch (error) {
     res.status(500).send('Error fetching data: ' + error.message);
   }
@@ -28,34 +40,39 @@ transactionsRouter.get('/', async (req, res) => {
 transactionsRouter.post('/games', async (req, res) => {
   const { AppID, Name, Releasedate, Requiredage, Price, DLCcount, Windows, Mac, Linux, Achievements, Developers, Publishers, Categories, Genres, Positive, Negative} = req.body;
   
-  const AppID_double = parseFloat(AppID);
-  const Requiredage_double = parseFloat(Requiredage);
-  const Price_double = parseFloat(Price);
-  const DLCcount_double = parseFloat(DLCcount);
-  const Achievements_double = parseFloat(Achievements);
-  const Positive_double = parseFloat(Positive);
-  const Negative_double = parseFloat(Negative);
-  const parsedDate = parse(Releasedate, 'dd-MMM-yy', new Date());
-  const formattedDate = format(parsedDate, 'dd/MM/yyyy');
+  // const AppID_double = parseFloat(AppID);
+  // const Requiredage_double = parseFloat(Requiredage);
+  // const Price_double = parseFloat(Price);
+  // const DLCcount_double = parseFloat(DLCcount);
+  // const Achievements_double = parseFloat(Achievements);
+  // const Positive_double = parseFloat(Positive);
+  // const Negative_double = parseFloat(Negative);
+
+  const fixedWindows = Windows ? 'TRUE' : 'FALSE';
+  const fixedMac = Mac ? 'TRUE' : 'FALSE';
+  const fixedLinux = Linux ? 'TRUE' : 'FALSE';
+
+  console.log(fixedWindows, fixedMac, fixedLinux);
+
 
   try {
     const newGame = await CentralNodeGameInformation.create({
-      AppID: AppID_double,
+      AppID: AppID,
       Name: Name , 
-      Releasedate: formattedDate,
-      Requiredage: Requiredage_double,
-      Price: Price_double,
-      DLCcount: DLCcount_double,
-      Windows: Windows,
-      Mac: Mac,
-      Linux: Linux,
-      Achievements: Achievements_double,
+      Releasedate: Releasedate,
+      Requiredage: Requiredage,
+      Price: Price,
+      DLCcount: DLCcount,
+      Windows: fixedWindows,
+      Mac: fixedMac,
+      Linux: fixedLinux,
+      Achievements: Achievements,
       Developers: Developers,
       Publishers: Publishers,
       Categories: Categories,
       Genres: Genres,
-      Positive: Positive_double,
-      Negative: Negative_double,      
+      Positive: Positive,
+      Negative: Negative,      
     });
 
     res.redirect('/');
@@ -86,8 +103,12 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
     Negative  
    } = req.body;
 
-  
-   const formattedDate = format(Releasedate, 'dd/MM/yyyy');
+  console.log(Windows, Linux, Mac);
+  const fixedWindows = Windows ? 'TRUE' : 'FALSE';
+  const fixedMac = Mac ? 'TRUE' : 'FALSE';
+  const fixedLinux = Linux ? 'TRUE' : 'FALSE';
+
+  console.log(fixedWindows, fixedLinux, fixedMac);
 
   try {
     const game = await CentralNodeGameInformation.findByPk(id);
@@ -95,13 +116,13 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
       return res.status(404).send('Game not found');
     }
     game.Name = Name;
-    game.Releasedate = formattedDate;
+    game.Releasedate = Releasedate;
     game.Requiredage = Requiredage;
     game.Price = Price;
     game.DLCcount = DLCcount;
-    game.Windows = Windows;
-    game.Mac = Mac;
-    game.Linux = Linux;
+    game.Windows = fixedWindows;
+    game.Mac = fixedMac;
+    game.Linux = fixedLinux;
     game.Achievements = Achievements;
     game.Developers = Developers;
     game.Publishers = Publishers;
@@ -131,6 +152,28 @@ transactionsRouter.post('/delete/:id', async (req, res) => {
   } catch (error) {
     res.status(500).send('Error deleting record: ' + error.message);
   }
+});
+
+transactionsRouter.post('/search', async (req, res) => {
+  const appid = req.body.AppID;
+  console.log('data recieved', appid);
+  
+
+  const searchRecord = await CentralNodeGameInformation.findAll({where: {AppID: appid}, raw:true});
+
+  for(const games of searchRecord){
+    try{
+      const parsedDate = parse(games.Releasedate, 'dd-MMM-yy', new Date());
+      const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+      games.Releasedate = formattedDate;
+    } catch(e)
+    {
+      console.log('format already fixed.');
+    }
+  }
+  res.render('index', { games: searchRecord, helpers: {
+      isTrue(value) {return value == 'TRUE';}
+    } });
 });
 
 

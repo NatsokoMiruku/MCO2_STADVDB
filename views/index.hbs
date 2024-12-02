@@ -32,9 +32,9 @@
             <td><input type="number" name="Requiredage" value="{{Requiredage}}" min="0" /></td>
             <td><input type="number" name="Price" value="{{Price}}" min="0" step="0.01" required /></td>
             <td><input type="number" name="DLCcount" value="{{DLCcount}}" min="0" /></td>
-            <td><input type="checkbox" name="Windows" value="true" {{#if Windows}}checked{{/if}} /></td>
-            <td><input type="checkbox" name="Mac" value="true" {{#if Mac}}checked{{/if}} /></td>
-            <td><input type="checkbox" name="Linux" value="true" {{#if Linux}}checked{{/if}} /></td>
+            <td><input type="checkbox" name="Windows" value="{{Windows}}" {{#if (isTrue Windows)}}checked{{else}}{{/if}} /></td>
+            <td><input type="checkbox" name="Mac" value="{{Mac}}" {{#if (isTrue Mac)}}checked{{else}}{{/if}} /></td>
+            <td><input type="checkbox" name="Linux" value="{{Linux}}" {{#if (isTrue Linux)}}checked{{else}}{{/if}} /></td>
             <td><input type="number" name="Achievements" value="{{Achievements}}" min="0" /></td>
             <td><input type="text" name="Developers" value="{{Developers}}" required /></td>
             <td><input type="text" name="Publishers" value="{{Publishers}}" required /></td>
@@ -43,8 +43,7 @@
             <td><input type="number" name="Positive" value="{{Positive}}" min="0" /></td>
             <td><input type="number" name="Negative" value="{{Negative}}" min="0" /></td>
             <td>
-              <button type="submit">Update</button>
-              <a href="/edit/{{AppID}}">Edit</a> | 
+              <button type="submit">Update</button> 
             </form>
             <form action="/delete/{{AppID}}" method="POST" style="display:inline;">
                 <button type="submit">Delete</button>
@@ -84,15 +83,15 @@
         </br>
 
         <label for="Windows">Windows</label>
-        <input type="text" id="Windows" name="Windows" required>
+        <input type="checkbox" id="Windows" name="Windows">
         </br>
 
         <label for="Mac">Mac</label>
-        <input type="text" id="Mac" name="Mac" required></textarea>
+        <input type="checkbox" id="Mac" name="Mac"></textarea>
         </br>
 
         <label for="Linux">Linux</label>
-        <input type="text" id="Linux" name="Linux" required>
+        <input type="checkbox" id="Linux" name="Linux">
         </br>
         
         <label for="Achievements">Achievements</label>
@@ -126,14 +125,16 @@
         <button type="submit">Add Game</button>
       </form>
 
-      <h2>Update record</h2>
-      <form action="/games" method="POST">
+      <h2>Search record</h2>
+      <form action="/search" method="POST">
         <label for="AppID">AppID</label>
         <input type="number" id="AppID" name="AppID" required>
         </br>
-
         <button type="submit">Update details</button>
       </form>
+        <form action="/" method="GET">
+          <button type="submit">Refresh</button>
+        </form>
 
       <!-- import csv buttons
       <button id="import-csv-for-central-node">Import CSV for Central Node</button>
