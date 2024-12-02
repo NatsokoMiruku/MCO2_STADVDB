@@ -1,44 +1,56 @@
 import express from 'express';
-import { Sequelize } from 'sequelize';
-import { localConnection } from './DBConn.js';
-import { centralNodeConnection } from './DBConn.js';
-import { node2Connection } from './DBConn.js';
-import { node3Connection } from './DBConn.js';
+import { engine } from 'express-handlebars';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { concurrencyMiddleware } from './middleware/concurrencyMiddleware.js';
+import { loggingMiddleware } from './middleware/loggingMiddleware.js';
+import gameRoutes from './routes/gameRoutes.js';
+import nodeRoutes from './routes/nodeRoutes.js';
+import recoveryRoutes from './routes/recoveryRoutes.js';
+import transactionRoutes from './routes/transactionRoutes.js';
+
+
+// Simulate __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.get('/', (req, res) =>{
-    res.send('Hello World!');
+// Set up Handlebars as the view engine
+app.engine('hbs', engine({ extname: '.hbs', defaultLayout: 'main', layoutsDir: './views/layouts' }));
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Define routes
+app.get('/dashboard', (req, res) => {
+    res.render('dashboard');
 });
 
-
-async function testConnection(sequelizeInstance, nodeName) {
-    try{
-        await sequelizeInstance.authenticate();
-        console.log(`Connection has been established successfully to ${nodeName}`);
-        if(nodeName == 'Local Connection'){
-            await localConnection.sync();
-        } else if(nodeName == 'Central Node') {
-            await centralNodeConnection.sync();
-        } else if(nodeName == 'Node 2') {
-            await node2Connection.sync();
-        } else if(nodeName == 'Node 3') {
-            await node3Connection.sync();
-        }
-    } catch(e) {
-        console.error(`Unable to connect to ${nodeName}`, e);
-    }
-}
-
-testConnection(localConnection, 'Local Connection');
-testConnection(centralNodeConnection, 'Central Node');
-testConnection(node2Connection, 'Node 2');
-testConnection(node3Connection, 'Node 3');
-
-
-
-
-
-app.listen(3000, () => {
-    console.log('server is listening on... ' + 3000);
+app.get('/transactions', (req, res) => {
+    res.render('transactions');
 });
+
+app.get('/recovery', (req, res) => {
+    res.render('recovery');
+});
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Register the recovery routes
+app.use('/recovery', recoveryRoutes);
+
+// Register routes with middleware
+app.use('/transactions', concurrencyMiddleware, transactionRoutes);
+
+app.use(loggingMiddleware); // Logging middleware
+
+app.use('/nodes', nodeRoutes);
+
+app.use('/', gameRoutes);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

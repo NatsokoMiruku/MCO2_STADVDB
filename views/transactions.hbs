@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Transactions</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script>
+        // Validate and prepare JSON data before submission
+        function handleFormSubmission(event) {
+            event.preventDefault();
+
+            const node = document.getElementById('node').value;
+            const action = document.getElementById('action').value;
+            const dataField = document.getElementById('data');
+
+            try {
+                // Parse JSON data
+                const data = JSON.parse(dataField.value);
+
+                // Check required fields for insert or update
+                if (action === 'insert' && (!data.AppID || !data.Name)) {
+                    alert('Insert action requires AppID and Name.');
+                    return;
+                }
+                if (action === 'update' && !data.AppID) {
+                    alert('Update action requires AppID.');
+                    return;
+                }
+
+                // Submit form using fetch
+                fetch('/transactions/perform', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ node, action, data }),
+                })
+                    .then(response => response.json())
+                    .then(result => {
+                        alert(result.message || 'Transaction successful!');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Transaction failed!');
+                    });
+            } catch (e) {
+                alert('Invalid JSON data. Please check your input.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Manage Transactions</h1>
+    </header>
+    <main>
+        <form id="transaction-form">
+            <label for="node">Node:</label>
+            <select name="node" id="node">
+                <option value="central">Central Node</option>
+                <option value="node2">Node 2</option>
+                <option value="node3">Node 3</option>
+            </select><br>
+
+            <label for="action">Action:</label>
+            <select name="action" id="action">
+                <option value="insert">Insert</option>
+                <option value="update">Update</option>
+            </select><br>
+
+            <label for="data">Data (JSON format):</label>
+            <textarea name="data" id="data" placeholder='{"AppID": 123, "Name": "Game Name"}'></textarea><br>
+
+            <button type="submit" onclick="handleFormSubmission(event)">Submit</button>
+        </form>
+    </main>
+    <footer>
+        <p>&copy; 2024 Distributed Database System</p>
+    </footer>
+</body>
+</html>

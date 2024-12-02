@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Distributed Database Dashboard</title>
+    <link rel="stylesheet" href="/public/css/styles.css">
+</head>
+<body>
+    <main>
+        <section>
+            <h2>Node Status</h2>
+            <ul>
+                <li id="central-node-status">Central Node: Checking...</li>
+                <li id="node2-status">Node 2: Checking...</li>
+                <li id="node3-status">Node 3: Checking...</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Game List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>AppID</th>
+                        <th>Name</th>
+                        <th>Release Date</th>
+                        <th>Price</th>
+                        <th>Developers</th>
+                        <th>Publishers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each games}}
+                    <tr>
+                        <td>{{this.AppID}}</td>
+                        <td>{{this.Name}}</td>
+                        <td>{{this.Releasedate}}</td>
+                        <td>{{this.Price}}</td>
+                        <td>{{this.Developers}}</td>
+                        <td>{{this.Publishers}}</td>
+                    </tr>
+                    {{else}}
+                    <tr>
+                        <td colspan="6">No games found.</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Manage Transactions</h2>
+            <form id="transaction-form" method="POST" action="/transactions/perform">
+                <label for="node">Select Node:</label>
+                <select name="node" id="node">
+                    <option value="central">Central Node</option>
+                    <option value="node2">Node 2</option>
+                    <option value="node3">Node 3</option>
+                </select><br>
+
+                <label for="action">Action:</label>
+                <select name="action" id="action">
+                    <option value="insert">Insert</option>
+                    <option value="update">Update</option>
+                </select><br>
+
+                <label for="data">Data (JSON format):</label>
+                <textarea name="data" id="data" rows="5" placeholder='{"AppID": 123, "Name": "Example Game"}'></textarea><br>
+
+                <button type="submit">Submit Transaction</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Simulate Recovery</h2>
+            <form id="recovery-form" method="POST" action="/recovery">
+                <label for="node-recovery">Select Node to Recover:</label>
+                <select name="node" id="node-recovery">
+                    <option value="central">Central Node</option>
+                    <option value="node2">Node 2</option>
+                    <option value="node3">Node 3</option>
+                </select><br>
+
+                <button type="submit">Simulate Recovery</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Distributed Database System</p>
+    </footer>
+
+    <script>
+        // Example script to dynamically update node statuses
+        async function fetchNodeStatus(nodeId, elementId) {
+            try {
+                const response = await fetch(`/nodes/status`);
+                const status = await response.text();
+                document.getElementById(elementId).textContent = `${nodeId}: ${status}`;
+            } catch (error) {
+                document.getElementById(elementId).textContent = `${nodeId}: Unavailable`;
+            }
+        }
+
+        // Check the statuses of all nodes
+        fetchNodeStatus("Central Node", "central-node-status");
+        fetchNodeStatus("Node 2", "node2-status");
+        fetchNodeStatus("Node 3", "node3-status");
+    </script>
+</body>
+</html>
