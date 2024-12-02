@@ -136,6 +136,13 @@
           <button type="submit">Refresh</button>
         </form>
 
+      {{#if needRecovery}}
+        <h2>Nodes are out of sync please sync nodes</h2>
+       <form action="/sync" method="GET">
+          <button type="submit">SYNC</button>
+        </form>
+      {{else}}
+      {{/if}}
       <!-- import csv buttons
       <button id="import-csv-for-central-node">Import CSV for Central Node</button>
       <button id="import-csv-for-node-2">Import CSV for Node 2</button>
