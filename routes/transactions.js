@@ -40,7 +40,7 @@ transactionsRouter.get('/', async (req, res) => {
         isTrue(value) {return value == 'TRUE';}
       } });
   } catch (error) {
-    res.status(500).send('Error fetching from Central Node, Fetching from node 2 and node 3 ' + error.message);
+    console.log('Error fetching from Central Node, Fetching from node 2 and node 3 ' + error.message);
     try{
       const steamGamesnode2 = await Node2GameInformation.findAll({limit: 10, raw: true});
       const steamGamesnode3 = await Node3GameInformation.findAll({limit: 10, raw: true});
