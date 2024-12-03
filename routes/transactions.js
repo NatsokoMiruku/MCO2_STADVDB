@@ -422,7 +422,51 @@ transactionsRouter.post('/search', async (req, res) => {
       console.log('format already fixed.');
     }
   }
-  res.render('index', { readgames: searchRecord, helpers: {
+  res.render('index', { games: searchRecord, helpers: {
+      isTrue(value) {return value == 'TRUE';}
+    } });
+});
+
+transactionsRouter.post('/search2', async (req, res) => {
+  const appid = req.body.AppID;
+  console.log('data recieved', appid);
+  
+
+  const searchRecord = await Node2GameInformation.findAll({where: {AppID: appid}, raw:true});
+
+  for(const games of searchRecord){
+    try{
+      const parsedDate = parse(games.Releasedate, 'dd-MMM-yy', new Date());
+      const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+      games.Releasedate = formattedDate;
+    } catch(e)
+    {
+      console.log('format already fixed.');
+    }
+  }
+  res.render('index', { games: searchRecord, helpers: {
+      isTrue(value) {return value == 'TRUE';}
+    } });
+});
+
+transactionsRouter.post('/search3', async (req, res) => {
+  const appid = req.body.AppID;
+  console.log('data recieved', appid);
+  
+
+  const searchRecord = await Node3GameInformation.findAll({where: {AppID: appid}, raw:true});
+
+  for(const games of searchRecord){
+    try{
+      const parsedDate = parse(games.Releasedate, 'dd-MMM-yy', new Date());
+      const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+      games.Releasedate = formattedDate;
+    } catch(e)
+    {
+      console.log('format already fixed.');
+    }
+  }
+  res.render('index', { games: searchRecord, helpers: {
       isTrue(value) {return value == 'TRUE';}
     } });
 });
