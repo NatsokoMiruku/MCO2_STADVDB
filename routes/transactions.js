@@ -5,7 +5,7 @@ import fs from 'fs';
 import { parse, format } from 'date-fns';
 
 const nodeRecoveryQueue = [];
-let needRecovery = false;
+var needRecovery = false;
 
 
 const transactionsRouter = express.Router();
@@ -16,6 +16,11 @@ const transactionsRouter = express.Router();
 
 // read all of the records
 transactionsRouter.get('/', async (req, res) => {
+  if(nodeRecoveryQueue.length != 0){
+    needRecovery = true;
+  } else {
+    needRecovery = false;
+  }
   try {
     // limit the display of the steamgames records to 20
       const steamgames = await CentralNodeGameInformation.findAll({ limit: 20, raw: true });
@@ -31,7 +36,7 @@ transactionsRouter.get('/', async (req, res) => {
         }
       }
       //console.log(steamgames);
-      res.render('index', { games: steamgames, helpers: {
+      res.render('index', { games: steamgames, needRecovery: needRecovery, helpers: {
         isTrue(value) {return value == 'TRUE';}
       } });
   } catch (error) {
@@ -101,40 +106,52 @@ transactionsRouter.post('/games', async (req, res) => {
   const releaseYear = parsedDate.getFullYear();
   console.log(releaseYear);
 
-  const centralNodeTransaction = await CentralNodeGameInformation.sequelize.transaction();
-
   try {
     console.log('Writing to Central Node');
+    const centralNodeTransaction = await CentralNodeGameInformation.sequelize.transaction();
+    if (!createGame) {
+      // If game not found, rollback the transaction and return 404
+      await centralNodeTransaction.rollback();
+      return res.status(404).send('Game not found');
+    }
     const newGame = await CentralNodeGameInformation.create(createGame, {transaction: centralNodeTransaction});
     await centralNodeTransaction.commit();
     console.log('Central Node write successful.');
   } catch (centralError) {
-    await centralNodeTransaction.rollback();
-    res.status(500).send('Error creating new record in Central Node: ' + centralError.message);
+    console.log('Error creating new record in Central Node: ' + centralError.message);
     nodeRecoveryQueue.push({node: 'CentralNode', operation: 'create',  data: createGame});
   }
   if(releaseYear < 2010){
-    const node2Transaction = await Node2GameInformation.sequelize.transaction();
     try {
       console.log('Writing to Node 2');
+      const node2Transaction = await Node2GameInformation.sequelize.transaction();
+      if (!createGame) {
+        // If game not found, rollback the transaction and return 404
+        await node2Transaction.rollback();
+        return res.status(404).send('Game not found');
+      }
       const newGame = await Node2GameInformation.create(createGame, {transaction: node2Transaction});
       await node2Transaction.commit();
       console.log('Node 2 write successful.');
     } catch (node2Error) {
-      await node2Transaction.rollback();
-      res.status(500).send('Error creating new record in Node 2: ' + node2Error.message);
+      console.log('Error creating new record in Node 2: ' + node2Error.message);
       nodeRecoveryQueue.push({node: 'Node 2', operation: 'create', data: createGame});
     }
   } else {
-    const node3Transaction = await Node3GameInformation.sequelize.transaction();
     try {
+      //do this for other functions
       console.log('Writing to Node 3');
+      const node3Transaction = await Node3GameInformation.sequelize.transaction();
+      if (!createGame) {
+        // If game not found, rollback the transaction and return 404
+        await node3Transaction.rollback();
+        return res.status(404).send('Game not found');
+      }
       const newGame = await Node3GameInformation.create(createGame, {transaction: node3Transaction});
       await node3Transaction.commit();
       console.log('Node 3 write successful.');
     } catch (node3Error) {
-      await node3Transaction.rollback();
-      res.status(500).send('Error creating new record in Node 3: ' + node3Error.message);
+      console.log('Error creating new record in Node 3: ' + node3Error.message);
       nodeRecoveryQueue.push({node: 'Node 3', operation: 'create', data: createGame});
     }
   }
@@ -148,6 +165,7 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
   
   const { id } = req.params;
   const { 
+    AppID,
     Name, 
     Releasedate,
     Requiredage,
@@ -174,6 +192,7 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
   console.log(fixedWindows, fixedLinux, fixedMac);
 
   const updateGame = {
+    AppID: id,
     Name: Name , 
     Releasedate: Releasedate,
     Requiredage: Requiredage,
@@ -194,15 +213,16 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
   const parsedDate = parse(Releasedate, 'yyyy-MM-dd', new Date());
   const releaseYear = parsedDate.getFullYear();
 
-  const centralNodeTransaction = await CentralNodeGameInformation.sequelize.transaction();
-
   try {
     console.log('Updating to Central Node');
-    const game = await CentralNodeGameInformation.findByPk(id, {transaction: centralNodeTransaction});
-    if (!game) {
-      console.log(game);
+    const centralNodeTransaction = await CentralNodeGameInformation.sequelize.transaction();
+    if (!updateGame) {
+      // If game not found, rollback the transaction and return 404
+      await centralNodeTransaction.rollback();
       return res.status(404).send('Game not found');
     }
+    const game = await CentralNodeGameInformation.findByPk(id, {transaction: centralNodeTransaction});
+    game.AppID = id;
     game.Name = Name;
     game.Releasedate = Releasedate;
     game.Requiredage = Requiredage;
@@ -223,19 +243,20 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
     await centralNodeTransaction.commit();
     console.log('Central Node update successful.');
     } catch (centralError) {
-      await centralNodeTransaction.rollback();
-      res.status(500).send('Error updating record in Central Node: ' + centralError.message);
+      console.log('Error updating record in Central Node: ' + centralError.message);
       nodeRecoveryQueue.push({node: 'CentralNode', operation: 'update', data: updateGame});
     }
-    if(releaseYear < 2010){
-      const node2Transaction = await Node2GameInformation.sequelize.transaction();
+    if(releaseYear < 2010){  
       try {
         console.log('Updating to Node 2');
-        const game = await Node2GameInformation.findByPk(id, {transaction: node2Transaction});
-        if (!game) {
-          console.log(game);
-          return res.status(404).send('Game not found');     
+        const node2Transaction = await Node2GameInformation.sequelize.transaction();
+        if (!updateGame) {
+          // If game not found, rollback the transaction and return 404
+          await node2Transaction.rollback();
+          return res.status(404).send('Game not found');
         }
+        const game = await Node2GameInformation.findByPk(id, {transaction: node2Transaction});
+        game.AppID = id;
         game.Name = Name;
         game.Releasedate = Releasedate;
         game.Requiredage = Requiredage;
@@ -256,19 +277,20 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
         await node2Transaction.commit();
         console.log('Node 2 update successful.');
           } catch (node2Error) {
-            await node2Transaction.rollback();
-            res.status(500).send('Error creating new record in Node 2: ' + node2Error.message);
+            console.log('Error creating new record in Node 2: ' + node2Error.message);
             nodeRecoveryQueue.push({node: 'Node 2', operation: 'update', data: updateGame});
           }
         } else {
-          const node3Transaction = await Node3GameInformation.sequelize.transaction();
           try {
             console.log('Updating to Node 3');
-            const game = await Node3GameInformation.findByPk(id, {transaction: node3Transaction});
-            if (!game) {
-              console.log(game);
+            const node3Transaction = await Node3GameInformation.sequelize.transaction();
+            if (!updateGame) {
+              // If game not found, rollback the transaction and return 404
+              await node3Transaction.rollback();
               return res.status(404).send('Game not found');
             }
+            const game = await Node3GameInformation.findByPk(id, {transaction: node3Transaction});
+            game.AppID = id;
             game.Name = Name;
             game.Releasedate = Releasedate;
             game.Requiredage = Requiredage;
@@ -289,8 +311,7 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
             await node3Transaction.commit();
             console.log('Node 3 update successful.');
           } catch (node3Error) {
-            await node3Transaction.rollback();
-            res.status(500).send('Error creating new record in Node 3: ' + node3Error.message);
+            console.log('Error updating new record in Node 3: ' + node3Error.message);
             nodeRecoveryQueue.push({node: 'Node 3', operation: 'update', data: updateGame});
           }
         }
@@ -324,61 +345,64 @@ transactionsRouter.post('/delete/:id', async (req, res) => {
    //add other node checking later
    const findGame = await CentralNodeGameInformation.findByPk(id);
 
+   console.log(findGame);
+
    const parsedDate = parse(findGame.Releasedate, 'yyyy-MM-dd', new Date());
    const releaseYear = parsedDate.getFullYear();
 
-  const centralNodeTransaction = await CentralNodeGameInformation.sequelize.transaction();
-
   try {
     console.log('Deleting to Central Node');
-    const game = await CentralNodeGameInformation.findByPk(id, {transaction: centralNodeConnection});
-    if (!game) {
+    const centralNodeTransaction = await CentralNodeGameInformation.sequelize.transaction();
+    if (!findGame) {
+      // If game not found, rollback the transaction and return 404
+      await centralNodeTransaction.rollback();
       return res.status(404).send('Game not found');
     }
-    await game.destroy(deleteGame, {transaction: centralNodeConnection});
-    await centralNodeConnection.commit();
+    const game = await CentralNodeGameInformation.findByPk(id,{transaction: centralNodeTransaction});
+    await game.destroy({transaction: centralNodeTransaction});
+    await centralNodeTransaction.commit();
     console.log('Central Node Delete successful.')
-    res.redirect('/'); 
   } catch (centralError) {
-    await centralNodeTransaction.rollback();
-    res.status(500).send('Error deleting record in Central Node: ' + centralError.message);
-    nodeRecoveryQueue.push({node: 'CentralNode', operation: 'delete',  data: id});
+    console.log('Error deleting record in Central Node: ' + centralError.message);
+    nodeRecoveryQueue.push({node: 'CentralNode', operation: 'delete',  data: {AppID: id}});
   }
   if(releaseYear < 2010){
-    const node2Transaction = await Node2GameInformation.sequelize.transaction();
     try {
       console.log('Deleting to Node 2');
-      const game = await Node2GameInformation.findByPk(id, {transaction: node2Transaction});
-      if (!game) {
+      const node2Transaction = await Node2GameInformation.sequelize.transaction();
+      if (!findGame) {
+        // If game not found, rollback the transaction and return 404
+        await node2Transaction.rollback();
         return res.status(404).send('Game not found');
       }
-      await game.destroy(deleteGame, {transaction: node2Transaction});
+      const game = await Node2GameInformation.findByPk(id, {transaction: node2Transaction});
+      await game.destroy({transaction: node2Transaction});
       await node2Transaction.commit();
       console.log('Node 2 Delete successful.')
-      res.redirect('/');
     } catch (node2Error) {
-      await node2Transaction.rollback();
-      res.status(500).send('Error deleting record in Node 2: ' + node2Error.message);
-      nodeRecoveryQueue.push({node: 'Node 2', operation: 'delete', data: id});
+      console.log('Error deleting record in Node 2: ' + node2Error.message);
+      nodeRecoveryQueue.push({node: 'Node 2', operation: 'delete', data: {AppID: id}});
     }
   } else {
-    const node3Transaction = await Node3GameInformation.sequelize.transaction();
+  
     try {
       console.log('Deleting to Node 3');
-      const game = await Node3GameInformation.findByPk(id, {transaction: node3Transaction});
-      if (!game) {
+      const node3Transaction = await Node3GameInformation.sequelize.transaction();
+      if (!findGame) {
+        // If game not found, rollback the transaction and return 404
+        await node3Transaction.rollback();
         return res.status(404).send('Game not found');
       }
-      await game.destroy(deleteGame, {transaction: node3Transaction});
+      const game = await Node3GameInformation.findByPk(id, {transaction: node3Transaction});
+      await game.destroy({transaction: node3Transaction});
       await node3Transaction.commit();
       console.log('Node 3 Delete successful.')
-      res.redirect('/');
     } catch (node3Error) {
-      await node3Transaction.rollback();
-      res.status(500).send('Error deleting record in Node 3: ' + node3Error.message);
-      nodeRecoveryQueue.push({node: 'Node 3', operation: 'delete', data: id});
+      console.log('Error deleting record in Node 3: ' + node3Error.message);
+      nodeRecoveryQueue.push({node: 'Node 3', operation: 'delete', data: {AppID: id}});
     }
   }
+  res.redirect('/'); 
 });
 
 transactionsRouter.post('/search', async (req, res) => {
@@ -398,30 +422,32 @@ transactionsRouter.post('/search', async (req, res) => {
       console.log('format already fixed.');
     }
   }
-  res.render('index', { games: searchRecord, helpers: {
+  res.render('index', { readgames: searchRecord, helpers: {
       isTrue(value) {return value == 'TRUE';}
     } });
 });
 
 
 transactionsRouter.get('/sync', async (req, res) => {
-  if (failedWrites.length === 0) return; // No failed writes to process
+  if (nodeRecoveryQueue.length === 0) return; // No failed writes to process
 
   console.log('Starting recovery of failed writes...');
   const remainingWrites = [];
 
-  for (const write of failedWrites) {
+
+  for (const write of nodeRecoveryQueue) {
+    console.log(write);
     try {
       if (write.operation === 'create') {
         if (write.node === 'CentralNode') {
           console.log('Retrying create operation on Central Node...');
-          await Node2GameInformation.create(write.data);
+          await CentralNodeGameInformation.create(write.data);
           console.log('Create recovery successful for Central Node.');
-        } else if (write.node === 'Node2') {
+        } else if (write.node === 'Node 2') {
             console.log('Retrying create operation on Node 2...');
             await Node2GameInformation.create(write.data);
             console.log('Create recovery successful for Node 2.');  
-        } else if (write.node === 'Node3') {
+        } else if (write.node === 'Node 3') {
           console.log('Retrying create operation on Node 3...');
           await Node3GameInformation.create(write.data);
           console.log('Create recovery successful for Node 3.');
@@ -429,29 +455,29 @@ transactionsRouter.get('/sync', async (req, res) => {
       } else if (write.operation === 'update') {
         if (write.node === 'CentralNode') {
           console.log('Retrying create operation on Central Node...');
-          await Node2GameInformation.create(write.data);
-          console.log('Create recovery successful for Central Node.');
-        } else if (write.node === 'Node2') {
+          await CentralNodeGameInformation.update(write.data, { where: { AppID: write.data.AppID } });
+          console.log('Updating recovery successful for Central Node.');
+        } else if (write.node === 'Node 2') {
           console.log('Retrying update operation on Node 2...');
-          await Node2GameInformation.update(write.data, { where: { id: write.data.id } });
+          await Node2GameInformation.update(write.data, { where: { AppID: write.data.AppID } });
           console.log('Update recovery successful for Node 2.');
-        } else if (write.node === 'Node3') {
+        } else if (write.node === 'Node 3') {
           console.log('Retrying update operation on Node 3...');
-          await Node3GameInformation.update(write.data, { where: { id: write.data.id } });
+          await Node3GameInformation.update(write.data, { where: { AppID: write.data.AppID } });
           console.log('Update recovery successful for Node 3.');
         }
       } else if (write.operation === 'delete') {
         if (write.node === 'CentralNode') {
-          console.log('Retrying create operation on Central Node...');
-          await Node2GameInformation.create(write.data);
-          console.log('Create recovery successful for Central Node.');
-        } else if (write.node === 'Node2') {
+          console.log('Retrying delete operation for Central Node...');
+          await CentralNodeGameInformation.destroy(write.data, { where: { id: write.data.id } });
+          console.log('Delete recovery successful for Central Node.');
+        } else if (write.node === 'Node 2') {
           console.log('Retrying delete operation on Node 2...');
-          await Node2GameInformation.destroy({ where: { id: write.data.id } });
+          await Node2GameInformation.destroy(write.data, { where: { id: write.data.id } });
           console.log('Delete recovery successful for Node 2.');
-        } else if (write.node === 'Node3') {
+        } else if (write.node === 'Node 3') {
           console.log('Retrying delete operation on Node 3...');
-          await Node3GameInformation.destroy({ where: { id: write.data.id } });
+          await Node3GameInformation.destroy(write.data, { where: { id: write.data.id } });
           console.log('Delete recovery successful for Node 3.');
         }
       }
@@ -461,13 +487,15 @@ transactionsRouter.get('/sync', async (req, res) => {
     }
   }
   // Update the failedWrites queue with remaining writes
-  failedWrites.length = 0; // Clear the queue
-  failedWrites.push(...remainingWrites);
+  nodeRecoveryQueue.length = 0; // Clear the queue
+  nodeRecoveryQueue.push(...remainingWrites);
 
   if (remainingWrites.length > 0) {
     console.log(`Recovery incomplete. ${remainingWrites.length} writes remain.`);
+    res.redirect('/'); 
   } else {
     console.log('All failed writes successfully recovered.');
+    res.redirect('/'); 
   }
 });
 

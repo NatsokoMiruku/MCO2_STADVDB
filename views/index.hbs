@@ -55,7 +55,6 @@
         {{/if}}
       </tbody>
     </table>
-
     <h2>Add New Game</h2>
       <form action="/games" method="POST">
         <label for="AppID">AppID</label>
@@ -125,12 +124,32 @@
         <button type="submit">Add Game</button>
       </form>
 
-      <h2>Search record</h2>
+      <h2>Search Central Node record</h2>
       <form action="/search" method="POST">
         <label for="AppID">AppID</label>
         <input type="number" id="AppID" name="AppID" required>
         </br>
-        <button type="submit">Update details</button>
+        <button type="submit">Search details</button>
+      </form>
+        <form action="/" method="GET">
+          <button type="submit">Refresh</button>
+        </form>
+        <h2>Search Node 2 record</h2>
+      <form action="/search2" method="POST">
+        <label for="AppID">AppID</label>
+        <input type="number" id="AppID" name="AppID" required>
+        </br>
+        <button type="submit">Search details</button>
+      </form>
+        <form action="/" method="GET">
+          <button type="submit">Refresh</button>
+        </form>
+        <h2>Search Node 3 record</h2>
+      <form action="/search3" method="POST">
+        <label for="AppID">AppID</label>
+        <input type="number" id="AppID" name="AppID" required>
+        </br>
+        <button type="submit">Search details</button>
       </form>
         <form action="/" method="GET">
           <button type="submit">Refresh</button>
