@@ -221,25 +221,31 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
       await centralNodeTransaction.rollback();
       return res.status(404).send('Game not found');
     }
-    const game = await CentralNodeGameInformation.findByPk(id, {transaction: centralNodeTransaction});
-    game.AppID = id;
-    game.Name = Name;
-    game.Releasedate = Releasedate;
-    game.Requiredage = Requiredage;
-    game.Price = Price;
-    game.DLCcount = DLCcount;
-    game.Windows = fixedWindows;
-    game.Mac = fixedMac;
-    game.Linux = fixedLinux;
-    game.Achievements = Achievements;
-    game.Developers = Developers;
-    game.Publishers = Publishers;
-    game.Categories = Categories;
-    game.Genres = Genres;
-    game.Positive = Positive;
-    game.Negative = Negative; 
 
-    await game.update(updateGame, {transaction: centralNodeTransaction});
+
+    const game = await CentralNodeGameInformation.update({
+      AppID: id,
+      Name: Name , 
+      Releasedate: Releasedate,
+      Requiredage: Requiredage,
+      Price: Price,
+      DLCcount: DLCcount,
+      Windows: fixedWindows,
+      Mac: fixedMac,
+      Linux: fixedLinux,
+      Achievements: Achievements,
+      Developers: Developers,
+      Publishers: Publishers,
+      Categories: Categories,
+      Genres: Genres,
+      Positive: Positive,
+      Negative: Negative
+    }, {
+      where: {
+        AppID: id
+      }
+    }, {transaction: centralNodeTransaction});
+
     await centralNodeTransaction.commit();
     console.log('Central Node update successful.');
     } catch (centralError) {
@@ -255,25 +261,28 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
           await node2Transaction.rollback();
           return res.status(404).send('Game not found');
         }
-        const game = await Node2GameInformation.findByPk(id, {transaction: node2Transaction});
-        game.AppID = id;
-        game.Name = Name;
-        game.Releasedate = Releasedate;
-        game.Requiredage = Requiredage;
-        game.Price = Price;
-        game.DLCcount = DLCcount;
-        game.Windows = fixedWindows;
-        game.Mac = fixedMac;
-        game.Linux = fixedLinux;
-        game.Achievements = Achievements;
-        game.Developers = Developers;
-        game.Publishers = Publishers;
-        game.Categories = Categories;
-        game.Genres = Genres;
-        game.Positive = Positive;
-        game.Negative = Negative; 
-
-        await game.update(updateGame, {transaction: node2Transaction});
+        const game = await Node2GameInformation.update({
+          AppID: id,
+          Name: Name , 
+          Releasedate: Releasedate,
+          Requiredage: Requiredage,
+          Price: Price,
+          DLCcount: DLCcount,
+          Windows: fixedWindows,
+          Mac: fixedMac,
+          Linux: fixedLinux,
+          Achievements: Achievements,
+          Developers: Developers,
+          Publishers: Publishers,
+          Categories: Categories,
+          Genres: Genres,
+          Positive: Positive,
+          Negative: Negative
+        }, {
+          where: {
+            AppID: id
+          }
+        }, {transaction: node2Transaction}); 
         await node2Transaction.commit();
         console.log('Node 2 update successful.');
           } catch (node2Error) {
@@ -289,25 +298,29 @@ transactionsRouter.post('/gamelists/:id', async (req, res) => {
               await node3Transaction.rollback();
               return res.status(404).send('Game not found');
             }
-            const game = await Node3GameInformation.findByPk(id, {transaction: node3Transaction});
-            game.AppID = id;
-            game.Name = Name;
-            game.Releasedate = Releasedate;
-            game.Requiredage = Requiredage;
-            game.Price = Price;
-            game.DLCcount = DLCcount;
-            game.Windows = fixedWindows;
-            game.Mac = fixedMac;
-            game.Linux = fixedLinux;
-            game.Achievements = Achievements;
-            game.Developers = Developers;
-            game.Publishers = Publishers;
-            game.Categories = Categories;
-            game.Genres = Genres;
-            game.Positive = Positive;
-            game.Negative = Negative; 
+            const game = await Node3GameInformation.update({
+              AppID: id,
+              Name: Name , 
+              Releasedate: Releasedate,
+              Requiredage: Requiredage,
+              Price: Price,
+              DLCcount: DLCcount,
+              Windows: fixedWindows,
+              Mac: fixedMac,
+              Linux: fixedLinux,
+              Achievements: Achievements,
+              Developers: Developers,
+              Publishers: Publishers,
+              Categories: Categories,
+              Genres: Genres,
+              Positive: Positive,
+              Negative: Negative
+            }, {
+              where: {
+                AppID: id
+              }
+            }, {transaction: node3Transaction});
 
-            await game.update(updateGame, {transaction: node3Transaction});
             await node3Transaction.commit();
             console.log('Node 3 update successful.');
           } catch (node3Error) {
@@ -513,15 +526,15 @@ transactionsRouter.get('/sync', async (req, res) => {
       } else if (write.operation === 'delete') {
         if (write.node === 'CentralNode') {
           console.log('Retrying delete operation for Central Node...');
-          await CentralNodeGameInformation.destroy(write.data, { where: { id: write.data.id } });
+          await CentralNodeGameInformation.destroy({ where: { AppID: write.data.AppID } });
           console.log('Delete recovery successful for Central Node.');
         } else if (write.node === 'Node 2') {
           console.log('Retrying delete operation on Node 2...');
-          await Node2GameInformation.destroy(write.data, { where: { id: write.data.id } });
+          await Node2GameInformation.destroy({ where: { AppID: write.data.AppID } });
           console.log('Delete recovery successful for Node 2.');
         } else if (write.node === 'Node 3') {
           console.log('Retrying delete operation on Node 3...');
-          await Node3GameInformation.destroy(write.data, { where: { id: write.data.id } });
+          await Node3GameInformation.destroy({ where: { AppID: write.data.AppID } });
           console.log('Delete recovery successful for Node 3.');
         }
       }
